@@ -1,6 +1,6 @@
 # 2021 Data
 
-Archive of datasets and articles from the 2021 series of `#TidyTuesday` events.
+Archive of datasets and articles from the 2021 series of `#TidyTuesday` events in which I have participated. readme.md files originate in main branch of rfordatascience/tidytuesday.
 
 | Week | Date | Data | Source | Article
 | :---: | :---: | :--- | :--- | :---|
