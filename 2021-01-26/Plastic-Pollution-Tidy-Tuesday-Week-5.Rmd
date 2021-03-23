@@ -1,0 +1,138 @@
+---
+title: "Plastic Pollution - Tidy Tuesday - Week 5"
+author: "Sean Jackson"
+date: "1/26/2021"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+## initial settings
+knitr::opts_chunk$set(
+  comment = NA,
+  echo = TRUE,
+  error = TRUE,
+  cache = FALSE,
+  message = FALSE,
+  dpi = 96,
+  warning = FALSE
+)
+
+## width to use when printing tables etc.
+options(
+  width = 250,
+  scipen = 100,
+  max.print = 5000,
+  stringsAsFactors = FALSE
+)
+```
+
+<style>
+.table {
+  width: auto;
+}
+ul, ol {
+  padding-left: 18px;
+}
+pre, code, pre code {
+  overflow: auto;
+  white-space: pre;
+  word-wrap: normal;
+  background-color: #ffffff;
+}
+</style>
+
+
+```{r load libraries}
+library(tidyverse)
+library(leaflet)
+library(geojsonio)
+library(sf)
+```
+
+My Tidy Tuesday Week 5 contribution is a visualization of plastic pollution collected by [breakfreefromplastic.org](breakfreefromplastic.org) from around the globe. Due to a lack of time, I chose to use the provided link to a the cleaned dataset rather than writing a new script to pull and organize data from the provided google drives. To create the leaflet map, I also pulled in shapefiles from [datahub.io](https://datahub.io/core/geo-countries#resource-countries).
+
+
+```{r load data}
+plastics <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-26/plastics.csv')
+geojson_countries <- geojson_sf("https://datahub.io/core/geo-countries/r/countries.geojson")
+```
+
+With the data loaded, I did some minor cleaning and organizing of the data such that it can be merged with the spatial data frame of countries from around the world.
+
+```{r cleaning and merging}
+# replace NA values with 0
+plastics$grand_total <- plastics$grand_total %>%
+                        replace_na(0)
+
+country_yearly_totals <- plastics %>%
+  group_by(country,year) %>%
+  summarise(Total = sum(grand_total))
+# rename columns for merging purposes
+colnames(country_yearly_totals) <- c("ADMIN", "Year", "Total")
+
+# create grand total aggregates and volunteer count columns in seperate data frames
+# to be joined and read into to the leaflet map
+c_2019 <- country_yearly_totals %>%
+  filter(Year == "2019") %>%
+  select(-Year)
+colnames(c_2019) <- c("ADMIN","Total_2019")
+
+c_2020 <- country_yearly_totals %>%
+  filter(Year == "2020") %>%
+  select(-Year)
+colnames(c_2020) <- c("ADMIN","Total_2020")
+
+v_2019 <- plastics %>%
+  filter(year == "2019") %>%
+  select(country,volunteers) %>%
+  distinct()
+colnames(v_2019) <- c("ADMIN","Volunteers_2019")
+
+v_2020 <- plastics %>%
+  filter(year == "2020") %>%
+  group_by(country, volunteers) %>%
+  select(country, volunteers) %>%
+  distinct()
+colnames(v_2020) <- c("ADMIN","Volunteers_2020")
+
+# now merge the aggregated counts with the spacial data frame
+m <- sp::merge(geojson_countries,c_2019, by = 'ADMIN')
+m <- sp::merge(m,c_2020, by = 'ADMIN')
+m <- sp::merge(m,v_2019, by = 'ADMIN')
+m <- sp::merge(m,v_2020, by = 'ADMIN')
+```
+
+Finally, I create the leaflet map, colors, and label
+
+```{r map and label}
+mytext <- paste(
+  "Country: ", m$ADMIN, 
+  "<br/> 2020 - Total Plastic: ", m$Total_2020, "&emsp;Total Volunteers: ", m$Volunteers_2020,
+  "<br/> 2019 - Total Plastic: ", m$Total_2019, "&emsp;Total Volunteers: ", m$Volunteers_2019,
+  sep = " "
+) %>%
+  lapply(htmltools::HTML)
+
+pal <- colorNumeric(c("blue","yellow","red"),
+                    domain = log(m$Total_2020),
+                    n = 5)
+
+leaflet(m) %>%
+  addTiles() %>%
+  addPolygons(stroke = TRUE, 
+              smoothFactor = 0.3, 
+              label = mytext,
+              color = ~pal(log(m$Total_2020)),
+              highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                  bringToFront = TRUE)) %>%
+  addLegend("bottomright", 
+            pal = pal, 
+            values = ~log(m$Total_2020),
+            title = "Ln Total Plastic (2020)",
+            #labFormat = labelFormat(prefix = "$"),
+            opacity = 1)
+```
+
+
