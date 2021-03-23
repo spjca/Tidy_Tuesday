@@ -1,0 +1,32 @@
+{
+    "id": "E68E75F3",
+    "path": null,
+    "project_path": null,
+    "type": "r_dataframe",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1615595112824.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "expression": "genreCounts",
+        "caption": "genreCounts",
+        "totalObservations": "37653",
+        "displayedObservations": "37653",
+        "variables": "7",
+        "cacheKey": "FD853A1F",
+        "object": "genreCounts",
+        "environment": "",
+        "contentUrl": "grid_resource/gridviewer.html?env=&obj=genreCounts&cache_key=FD853A1F&max_cols=50",
+        "preview": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 7954884637903448438,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1615595112824,
+    "read_only": false,
+    "read_only_alternatives": []
+}

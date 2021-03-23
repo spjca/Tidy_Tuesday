@@ -1,0 +1,12 @@
+name: TidyTuesday2021Week12
+title: TidyTuesday2021Week12
+username:
+account: seanpj
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3826755
+bundleId: 4382408
+url: https://seanpj.shinyapps.io/TidyTuesday2021Week12/
+when: 1616459383.32081
+asMultiple: FALSE
+asStatic: FALSE

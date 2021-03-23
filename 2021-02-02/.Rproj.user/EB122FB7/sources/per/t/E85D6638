@@ -1,0 +1,25 @@
+{
+    "id": "E85D6638",
+    "path": "~/GitHub/tidytuesday/data/2021/2021-02-02/eda.R",
+    "project_path": "eda.R",
+    "type": "r_source",
+    "hash": "1192209330",
+    "contents": "",
+    "dirty": false,
+    "created": 1612402521231.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "tempName": "Untitled1",
+        "cursorPosition": "100,0",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1612581376,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1612581377006,
+    "read_only": false,
+    "read_only_alternatives": []
+}

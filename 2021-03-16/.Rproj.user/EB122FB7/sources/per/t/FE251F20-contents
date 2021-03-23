@@ -1,0 +1,123 @@
+---
+title: "Tidy Tuesday 2021 Week 12"
+author: "Sean Jackson"
+date: "3/19/2021"
+output: 
+  html_document:
+    code_folding: hide
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+## initial settings
+knitr::opts_chunk$set(
+  comment = NA,
+  echo = TRUE,
+  error = TRUE,
+  cache = FALSE,
+  message = FALSE,
+  dpi = 96,
+  warning = FALSE
+)
+
+## width to use when printing tables etc.
+options(
+  width = 250,
+  scipen = 100,
+  max.print = 5000,
+  stringsAsFactors = FALSE
+)
+```
+
+<style>
+.table {
+  width: auto;
+}
+ul, ol {
+  padding-left: 18px;
+}
+pre, code, pre code {
+  overflow: auto;
+  white-space: pre;
+  word-wrap: normal;
+  background-color: #ffffff;
+}
+</style>
+
+```{r library and setup}
+# libraries
+library(tidyverse)
+library(lubridate)
+library(scales)
+library(data.table)
+library(hrbrthemes)
+library(viridis)
+library(shiny)
+library(extrafont)
+```
+
+This week's data from [Valve Corporation](https://www.valvesoftware.com/en/) is a list of games played and their monthly average and peak players. I start by loading the data, changing to data.table for easier manipulation, then adding a date column which previously had been monthly/yearly fields. 
+
+
+```{r load data}
+# load data
+games <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-16/games.csv')
+
+games <- data.table(games)
+
+games <- games %>%
+  mutate(date = ymd(paste(year, month, 1))) %>%
+  filter(date > min(date)) %>%
+  mutate(month = fct_reorder(month, month(date)))
+```
+
+Next I create a function which creates a ggplot output when called by a shiny app. The dropdown from the shiny app is a list of different franchises which are then displayed in a log scaled line plot.
+
+```{r function and shiny app}
+inputPanel(
+  selectInput("Franchise", label = "Franchise:",
+              choices = c("DOOM",
+                          "Football Manager", 
+                          "Borderlands", 
+                          "Grand Theft Auto",
+                          "Counter-Strike",
+                          "NBA 2K",
+                          "Elder Scrolls",
+                          "Total War",
+                          "XCOM",
+                          "Far Cry",
+                          "Call of Duty",
+                          "STAR WARS"), selected = "Football Manager")
+)
+
+
+plotter <- function(input){
+  games[gamename %like% input & peak > 100] %>% 
+  ggplot(.) +
+    geom_line(aes(x = date,
+                  y = peak,
+                  group = gamename,
+                  color = gamename)) +
+    scale_y_log10(labels = comma) +
+    scale_fill_viridis(discrete = T) +
+    theme_ipsum() + 
+    theme(axis.text.x = element_text(
+      angle = 45,
+      hjust = 1,
+      vjust = 0.5
+    )) +
+    theme(legend.position="bottom") +
+    labs(x="Year", 
+         y="Max Daily Players (log scale)",
+         title = "Max Daily Players",
+         subtitle = paste(input," Franchise 2012 - 2021"),
+         caption="Data from Valve\nSeanPJ.com")  
+} 
+
+
+renderPlot({
+plotter(input$Franchise)
+})
+```
+
+

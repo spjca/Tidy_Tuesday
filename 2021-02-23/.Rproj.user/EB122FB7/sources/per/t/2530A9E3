@@ -1,0 +1,24 @@
+{
+    "id": "2530A9E3",
+    "path": "~/GitHub/tidytuesday/data/2021/2021-02-16/eda3.R",
+    "project_path": null,
+    "type": "r_source",
+    "hash": "3793705366",
+    "contents": "",
+    "dirty": false,
+    "created": 1614132299288.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "cursorPosition": "16,21",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1613703473,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1613703473,
+    "read_only": false,
+    "read_only_alternatives": []
+}
