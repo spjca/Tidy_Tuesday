@@ -1,0 +1,102 @@
+---
+title: "Tidy Tuesday 2021 Week 13"
+author: "Sean Jackson"
+date: "3/26/2021"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+## initial settings
+knitr::opts_chunk$set(
+  comment = NA,
+  echo = TRUE,
+  error = TRUE,
+  cache = FALSE,
+  message = FALSE,
+  dpi = 96,
+  warning = FALSE
+)
+
+## width to use when printing tables etc.
+options(
+  width = 250,
+  scipen = 100,
+  max.print = 5000,
+  stringsAsFactors = FALSE
+)
+```
+
+<style>
+.table {
+  width: auto;
+}
+ul, ol {
+  padding-left: 18px;
+}
+pre, code, pre code {
+  overflow: auto;
+  white-space: pre;
+  word-wrap: normal;
+  background-color: #ffffff;
+}
+</style>
+
+United Nations Roll Call votes is a wealth of interesting data. This week I will take the short names of each roll call vote and turn them into yearly wordclouds with color and size representing word frequency (blue low and red high). First I load the libraries, source data, and an image.
+
+```{r libraries and data}
+library(tidyverse)       # Data management
+library(ggplot2)     # Graph framework
+library(wordcloud)
+library(ggwordcloud) # Wordcloud using ggplot
+library(gganimate)   # Animation
+library(tm)
+library(RColorBrewer) # color palettes
+library(tidytext)
+library(lubridate)
+library(png)
+library(grid)
+
+roll_calls <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-23/roll_calls.csv')
+img <- readPNG("unv3.png")
+```
+
+Next I perform a few alterations to the data to create a year column, break up the strings in short into individual words, remove common words, count the distinct words each year, finally and filter out the lower word counts.
+
+```{r clean data}
+rc_words <- roll_calls %>%
+  mutate(yr = as.integer(year(date))) %>%
+  filter(!is.na(short)) %>%
+  unnest_tokens(word, short) %>%
+  anti_join(stop_words, by = "word") %>%
+  distinct(yr, word) %>%
+  add_count(word, name = "word_count") %>%
+  filter(word_count >= 25)
+```
+
+Now I use ggplot and geom_text_wordcloud to build the base frames out of the data and image then animate the gif. 
+
+```{r format and animate}
+gg <- rc_words %>%
+  ggplot(.,aes(label = word
+             , size=word_count
+             , color = word_count)) +  
+  annotation_custom(rasterGrob(img, 
+                               width = unit(1,"npc"), 
+                               height = unit(1,"npc")), 
+                    -Inf, Inf, -Inf, Inf) +
+  geom_text_wordcloud() +
+  scale_size_area(max_size = 7) +
+  scale_colour_gradient(low =  "blue", high = "red") +
+  labs(title = "Annual Wordcloud of UN Roll Call Votes",
+       caption = "Data from United Nations\nSeanPJ.com") +
+  theme_minimal() +  
+  theme(plot.title = element_text(hjust = 0.5, face="bold", size=15),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  labs(subtitle = '{frame_time}') +
+  transition_time(yr)
+
+animate(gg, nframes = 120, fps = .5,  width = 600, height = 400,end_pause=30)
+```
+
